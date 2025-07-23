@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hava Durumu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 60px;
+        }
+        .navbar {
+            background-color: #343a40;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 500;
+        }
+        .nav-link {
+            color: rgba(255,255,255,.8) !important;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: white !important;
+        }
+        .nav-link.active {
+            color: white !important;
+            font-weight: 500;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .production-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .production-table th {
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 500;
+        }
+     
+        
+        .color-legend {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 2rem;
+            padding: 0.5rem;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 4px;
+        }
+        .upload-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .btn-custom {
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <!-- Navbar Başlangıç -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'weather:index' %}">
+                
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'weather:index' %}">
+                           
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="navbar-brand" href="{% url 'weather:show_excel_data' %}">
+                <i class="bi bi-table"></i> Üretim Tahmini
+            </a>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <form method="get" class="mb-4">
+            <div class="input-group">
+                <input type="text" class="form-control" name="city" placeholder="Şehir adı girin" required>
+                <button class="btn btn-primary" type="submit">Ara</button>
+            </div>
+        </form>
+
+        <h1>Hava Tahmini {{ city }}</h1>
+        {% if forecasts %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Gün</th>
+                        <th>Sıcaklık (°C)</th>
+                        <th>Tanım</th>
+                        <th>İkon</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for forecast in forecasts %}
+                        <tr>
+                            <td>{{ forecast.date }}</td>
+                            <td>{{ forecast.temperature }}°C</td>
+                            <td>{{ forecast.description }}</td>
+                            <td><img src="http://openweathermap.org/img/w/{{ forecast.icon }}.png" alt="Weather icon"></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Hava tahmini verisi bulunamadı.</p>
+        {% endif %}
+    </div>
+
+  <!-- Bootstrap JS ve bağlı kütüphaneler -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

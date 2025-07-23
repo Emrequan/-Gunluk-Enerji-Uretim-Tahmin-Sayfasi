@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+{% load custom_filters %}
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uluborlu RES Üretim Tahmini</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 60px;
+        }
+        .navbar {
+            background-color: #343a40;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: 500;
+        }
+        .nav-link {
+            color: rgba(255,255,255,.8) !important;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: white !important;
+        }
+        .nav-link.active {
+            color: white !important;
+            font-weight: 500;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .production-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .production-table th {
+            background-color: #343a40;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 500;
+        }
+        .production-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        .production-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .time-column {
+            background-color: #343a40;
+            color: white;
+            font-weight: 500;
+        }
+        .no-data {
+            background-color: #f5f5f5;
+        }
+        .very-low {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        .low {
+            background-color: #fff9c4;
+            color: #f57f17;
+        }
+        .medium {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        .high {
+            background-color: #bbdefb;
+            color: #1565c0;
+        }
+        .very-high {
+            background-color: #e1bee7;
+            color: #6a1b9a;
+        }
+        .color-legend {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 2rem;
+            padding: 0.5rem;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border-radius: 4px;
+        }
+        .upload-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .btn-custom {
+            padding: 0.5rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Başlangıç -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'weather:index' %}">
+                <i class="bi bi-cloud-sun"></i> Hava Durumu
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'weather:show_excel_data' %}">
+                           
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar Bitiş -->
+
+    <div class="main-container">
+        <h1 class="text-center mb-4">Uluborlu RES Günlük Üretim Tahmini</h1>
+
+        <div class="upload-section">
+            <div class="d-flex gap-3 justify-content-center align-items-center">
+                <form method="post" action="{% url 'weather:show_excel_data' %}" enctype="multipart/form-data" class="d-flex gap-3">
+                    {% csrf_token %}
+                    <input type="file" name="excel_file" class="form-control" style="max-width: 400px;" accept=".xls,.xlsx" required>
+                    <button type="submit" class="btn btn-primary btn-custom">
+                        <i class="bi bi-upload"></i> Dosya Yükle
+                    </button>
+                </form>
+                <form method="post" action="{% url 'weather:update_from_gmail' %}" class="d-flex">
+                    {% csrf_token %}
+                    <button type="submit" name="update_from_gmail" class="btn btn-success btn-custom">
+                        <i class="bi bi-envelope"></i> Gmail'den Güncelle
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="messages mb-4">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if data %}
+        <div class="table-responsive">
+            <table class="production-table">
+                <thead>
+                    <tr>
+                        <th>Saat</th>
+                        <th>{{ data.tarih1|default:'Gün 1' }}</th>
+                        <th>{{ data.tarih2|default:'Gün 2' }}</th>
+                        <th>{{ data.tarih3|default:'Gün 3' }}</th>
+                        <th>{{ data.tarih4|default:'Gün 4' }}</th>
+                        <th>{{ data.tarih5|default:'Gün 5' }}</th>
+                        <th>{{ data.tarih6|default:'Gün 6' }}</th>
+                        <th>{{ data.tarih7|default:'Gün 7' }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hour in "x"|rjust:"24"|make_list %}
+                        <tr>
+                            <td class="time-column">{{ forloop.counter0|stringformat:"02d" }}:00-{{ forloop.counter|stringformat:"02d" }}:00</td>
+                            {% for day in "x"|rjust:"7"|make_list %}
+                                {% with cell_index=forloop.counter0|multiply:24|add:forloop.parentloop.counter %}
+                                    {% with cell_key="cell_m"|add:cell_index|stringformat:"d" %}
+                                        <td class="{{ data|get_item:cell_key|get_item:'color_class'|default:'no-data' }}">
+                                            {{ data|get_item:cell_key|get_item:'value'|default:'-' }}
+                                        </td>
+                                    {% endwith %}
+                                {% endwith %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="color-legend">
+            <h5 class="mb-3">Üretim Seviyeleri (MWh)</h5>
+            <div class="d-flex flex-wrap gap-3">
+                <div class="legend-item">
+                    <div class="legend-color very-low"></div>
+                    <span>Çok Düşük: < 10 MWh</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color low"></div>
+                    <span>Düşük: 10-25 MWh</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color medium"></div>
+                    <span>Orta: 25-40 MWh</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color high"></div>
+                    <span>Yüksek: 40-60 MWh</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color very-high"></div>
+                    <span>Çok Yüksek: > 60 MWh</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            Henüz veri yüklenmedi. Lütfen bir Excel dosyası yükleyin.
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
